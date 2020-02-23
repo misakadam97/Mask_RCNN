@@ -353,13 +353,17 @@ class Dataset(object):
         return self.image_info[image_id]["path"]
 
     def load_image(self, image_id):
-        """Load the specified image and return a [H,W,3] Numpy array.
+        """Load the specified image and return a [H,W,_] Numpy array.
         """
         # Load image
         image = skimage.io.imread(self.image_info[image_id]['path'])
-        # If grayscale. Convert to RGB for consistency.
-        if image.ndim != 3:
-            image = skimage.color.gray2rgb(image)
+        # If grayscale
+        # add new dim so shape goes from (512,512) -> (512,512,1); and then
+        # at model building i think it'll become (1,512,512,1). Other option is
+        # to change the whole keras model which seems like more complicated
+        
+        if image.ndim < 3:
+            image = image[..., np.newaxis]
         # If has an alpha channel, remove it for consistency
         if image.shape[-1] == 4:
             image = image[..., :3]
